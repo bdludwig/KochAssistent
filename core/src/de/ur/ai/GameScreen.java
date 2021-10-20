@@ -87,8 +87,11 @@ public class GameScreen implements Screen, InputProcessor {
                 }
 
             }
+            game.batch.end();
         }
         else if (over != null) {
+            game.batch.end();
+
             while (li.hasNext()) {
                 Renderer r = li.next();
 
@@ -107,8 +110,8 @@ public class GameScreen implements Screen, InputProcessor {
                 }
             }
         }
+        else game.batch.end();
 
-        game.batch.end();
 
         // process user input
         if (Gdx.input.isTouched()) {
@@ -220,15 +223,18 @@ public class GameScreen implements Screen, InputProcessor {
         ListIterator<Renderer> li = renderers.listIterator();
 
         System.out.println("mouse released on: " + screenX + "," + screenY);
-        hand_moving = false;
+       if (hand_moving) {
+           hand_moving = false;
 
-        while (li.hasNext()) {
-            Renderer r = li.next();
-            if (r.contains(screenX, screenY)) {
-                System.out.println("action on: " + r.label() + " - " + r.getBoundingRectangle() + ", " + r.getX());
-                selected_object = r;
-            }
-        }
+           while (li.hasNext()) {
+               Renderer r = li.next();
+               if (r.contains(screenX, screenY)) {
+                   System.out.println("action on: " + r.label() + " - " + r.getBoundingRectangle() + ", " + r.getX());
+                   selected_object = r;
+               }
+           }
+       }
+
         return false;
     }
 
@@ -256,6 +262,8 @@ public class GameScreen implements Screen, InputProcessor {
     public boolean mouseMoved(int screenX, int screenY) {
         ArrayList<Renderer> renderers = game.getRenderers();
         ListIterator<Renderer> li = renderers.listIterator();
+
+        selected_object = null;
 
         while (li.hasNext()) {
             Renderer r = li.next();
