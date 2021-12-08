@@ -13,8 +13,9 @@ public class StateDescription {
 
     public StateDescription(ParameterSet p) {
         parameterSetState = p;
-        parameterSetState.assertFile("/Users/bdludwig/Dropbox/Software_Impl/KochAssistent/core/assets/golog_swi.pl");
-        parameterSetState.assertFile("/Users/bdludwig/Dropbox/Software_Impl/KochAssistent/core/assets/smart_kitchen.pl");
+        System.out.println(System.getProperty("user.dir"));
+        parameterSetState.assertFile("./golog_swi.pl");
+        parameterSetState.assertFile("./smart_kitchen.pl");
     }
 
     public Substitution entails(ParameterSet p) {

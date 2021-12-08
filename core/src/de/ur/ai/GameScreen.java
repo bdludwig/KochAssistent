@@ -8,6 +8,7 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 
 import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -82,40 +83,39 @@ public class GameScreen implements Screen, InputProcessor {
 
                 if (r.label().equals(selected_object.label())) {
                     r.render(game, game.font, camera);
+                    Pixmap p = new Pixmap((int)r.getWidth(),
+                            (int)r.getHeight(),
+                            Pixmap.Format.RGBA8888);
+                    p.setColor(0, 1, 0, 1);
+                    p.drawRectangle(0, 0, (int)r.getWidth(), (int)r.getHeight());
+                    game.batch.draw(new Texture(p), r.getX(), r.getY());
                 }
 
             }
-            game.batch.end();
 
             game.updateRenderers();
         }
-        else if (over != null) {
-            game.batch.end();
 
-            while (li.hasNext()) {
-                Renderer r = li.next();
-
-                if (r.label().equals(over.label())) {
-                    ShapeRenderer shapeRenderer = new ShapeRenderer();
-                    camera.update();
-                    shapeRenderer.setProjectionMatrix(camera.combined);
-
-                    shapeRenderer.setColor(1, 1, 0, 1);
-                    shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-                    shapeRenderer.rect(r.getX(), r.getY(), r.getWidth(), r.getHeight());
-                    shapeRenderer.end();
-                }
-            }
+        if (over != null) {
+            Pixmap p = new Pixmap((int)over.getWidth(),
+                    (int)over.getHeight(),
+                    Pixmap.Format.RGBA8888);
+            p.setColor(1, 1, 0, 1);
+            p.drawRectangle(0, 0, (int)over.getWidth(), (int)over.getHeight());
+            game.batch.draw(new Texture(p), over.getX(), over.getY());
         }
-        else game.batch.end();
 
+        game.batch.end();
 
+/*
         // process user input
         if (Gdx.input.isTouched()) {
             Vector3 touchPos = new Vector3();
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);
         }
+
+ */
     }
 
     @Override
@@ -311,7 +311,9 @@ public class GameScreen implements Screen, InputProcessor {
             }
         }
 
-        if (selected_object != null) System.out.println("action on: " + selected_object.label());
+        if (selected_object != null) {
+            System.out.println("action on: " + selected_object.label());
+        }
 
         return true;
     }
@@ -335,11 +337,18 @@ public class GameScreen implements Screen, InputProcessor {
 
         while (li.hasNext()) {
             Renderer r = li.next();
-//            System.out.println(r.label() + " with " + r.getBoundingRectangle() + " at " + screenX + "," + screenY);
             if (r.contains(touchPos.x, touchPos.y)) {
-                System.out.println("mouse over: " + r.label() + " at " + touchPos.x + "," + touchPos.y);
-
+                System.out.println("over");
                 over = r;
+
+                Pixmap p = new Pixmap((int)r.getWidth(),
+                        (int)r.getHeight(),
+                        Pixmap.Format.RGBA8888);
+                p.setColor(1, 1, 0, 1);
+                p.drawRectangle(0, 0, (int)r.getWidth(), (int)r.getHeight());
+                game.batch.begin();
+                game.batch.draw(new Texture(p), r.getX(), r.getY());
+                game.batch.end();
             }
         }
 

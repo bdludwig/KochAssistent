@@ -12,7 +12,7 @@ public class SalzRenderer extends Renderer {
     private final FileHandle my_img = Gdx.files.internal("salz.png");
 
     public SalzRenderer(Salz s, Konfiguration c) {
-        super(new Texture(Gdx.files.internal("salz.jpeg")), s, c);
+        super(new Texture(Gdx.files.internal("salz.png")), s, c);
     }
 
     @Override

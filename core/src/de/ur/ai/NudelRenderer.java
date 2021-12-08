@@ -15,7 +15,7 @@ public class NudelRenderer extends Renderer {
     private final FileHandle my_img = Gdx.files.internal("nudeln.png");
 
     public NudelRenderer(Nudeln s, Konfiguration c) {
-        super(new Texture(Gdx.files.internal("nudeln.jpeg")), s, c);
+        super(new Texture(Gdx.files.internal("nudeln.png")), s, c);
     }
 
     @Override
