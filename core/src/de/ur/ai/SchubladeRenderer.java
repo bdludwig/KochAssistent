@@ -17,8 +17,13 @@ public class SchubladeRenderer extends Renderer {
         ((Schublade) my_object).perform();
     }
 
-    public void render(SpriteBatch batch, BitmapFont font, Camera cam) {
-        font.draw(batch,
+    public void render(Drop game, BitmapFont font, Camera cam) {
+        setBounds(my_config.getX()/this.getScaleX(),
+                cam.viewportHeight - (my_config.getH() + my_config.getY())/this.getScaleY(),
+                my_config.getW()/this.getScaleX(),
+                my_config.getH()/this.getScaleY());
+
+        font.draw(game.batch,
                 ((Schublade)my_object).factsToProlog(new ParameterSet()).toString(),
                 this.getX(),
                 cam.viewportHeight - this.getY());

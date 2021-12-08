@@ -1,5 +1,6 @@
 package moebel;
 
+import de.ur.ai.Drop;
 import main.KochAssistentObject;
 import prolog.ParameterSet;
 
@@ -7,11 +8,9 @@ import java.util.ArrayList;
 
 public class Schrank extends Moebel {
     protected boolean door_open;
-    protected ArrayList<KochAssistentObject> storedObjects;
 
     public Schrank() {
         door_open = false;
-        storedObjects = new ArrayList<KochAssistentObject>();
     }
 
     public void open() {
@@ -36,24 +35,37 @@ public class Schrank extends Moebel {
     }
 
     public void perform() {
-        if (door_open) close();
+        if (door_open) {
+            close();
+        }
         else open();
+    }
+
+    @Override
+    public void addContainedObject(KochAssistentObject o) {
+        storedObjects.add(o);
+    }
+
+    @Override
+    public void removeContainedObject(KochAssistentObject o) {
+        storedObjects.remove(o);
     }
 
     public boolean isOpen() {
         return door_open;
     }
 
+    @Override
     public ParameterSet factsToProlog(ParameterSet p) {
         ParameterSet deviceState = p;
 
         // Klassenname des Geräts und name des Geräts werden dem Parameterset hinzugefügt.
-        deviceState = p.add(this.getClass().getSimpleName().toLowerCase()+ "(" + id() + ")" );
-        if (door_open) deviceState.add("door_open(" + id() + ")");
-        else deviceState.add("door_closed(" + id() + ")");
+        deviceState = p.add(bezeichner() + "(" + id() + ")" );
+        if (door_open) deviceState.add("door_open(" + id() + ",s0" + ")");
+        else deviceState.add("door_closed(" + id() + ",s0" + ")");
 
         for (KochAssistentObject k: storedObjects) {
-            deviceState.add("contains(" + id() + "," + k.bezeichner() +")");
+            deviceState.add("contains(" + id() + "," + k.id() + ",s0" +")");
         }
 
         return deviceState;

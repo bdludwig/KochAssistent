@@ -15,25 +15,30 @@ import moebel.*;
 import raum.Konfiguration;
 import raum.Kueche;
 import raum.Kuechenplan;
+import zutat.Nudeln;
+import zutat.Salz;
+import zutat.Zutat;
 
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
 public class Drop extends Game {
-
     public SpriteBatch batch;
     public BitmapFont font;
-    public Texture backgroundImage, handImage;
+    public Texture backgroundImage;
     public Sprite hand;
 
     private Kueche meineKueche;
     private Kuechenplan meinPlan;
+
     private ArrayList<Renderer> renderer;
+    private ArrayList<Renderer> renderers_to_add;
+    private ArrayList<Renderer> renderers_to_remove;
 
     public void create() {
         Rectangle r;
-        KochAssistentObject k;
+        KochAssistentObject k, z;
         // environment
 
         meineKueche = new Kueche();
@@ -78,6 +83,16 @@ public class Drop extends Game {
         k = new Oberschrank();
         meineKueche.addItem(k);
         meinPlan.neuerGegenstand(k, 220, 191, 286-220, 236-191);
+
+        z = new Salz();
+        meineKueche.addItem(z);
+        ((Moebel)k).addContainedObject(z);
+        ((Zutat)z).setContainer(k);
+
+        z = new Nudeln();
+        meineKueche.addItem(z);
+        ((Moebel)k).addContainedObject(z);
+        ((Zutat)z).setContainer(k);
 
         k = new Unterschrank();
         meineKueche.addItem(k);
@@ -135,26 +150,74 @@ public class Drop extends Game {
         meineKueche.addItem(k);
         meinPlan.neuerGegenstand(k, 295, 291, 381-295, 10);
 
+        System.out.println(meineKueche.factsToProlog());
+
         // visualization for environment
 
         renderer = new ArrayList<Renderer>();
+        renderers_to_add = new ArrayList<Renderer>();
+        renderers_to_remove = new ArrayList<Renderer>();
 
         ListIterator<KochAssistentObject> li = meineKueche.getItems().listIterator();
+        Renderer nr;
 
         while (li.hasNext()) {
             k = li.next();
             Konfiguration c = meinPlan.konfigurationVon(k.id());
 
-            if (k instanceof Ofen) renderer.add(new OvenRenderer((Ofen)k, c));
-            else if (k instanceof Schrank) renderer.add(new SchrankRenderer((Schrank) k, c));
-            else if (k instanceof Kuehlschrank) renderer.add(new KuehlschrankRenderer((Kuehlschrank) k, c));
-            else if (k instanceof Gefrierschrank) renderer.add(new GefrierschrankRenderer((Gefrierschrank) k, c));
-            else if (k instanceof Schublade) renderer.add(new SchubladeRenderer((Schublade) k, c));
-            else if (k instanceof Wasserhahn) renderer.add(new WasserhahnRenderer((Wasserhahn) k, c));
-            else if (k instanceof Dunstabzug) renderer.add(new DunstabzugRenderer((Dunstabzug) k, c));
-            else if (k instanceof Arbeitsplatte) renderer.add(new ArbeitsplatteRenderer((Arbeitsplatte) k, c));
-            else if (k instanceof Spuele) renderer.add(new SpueleRenderer((Spuele) k, c));
-            else if (k instanceof Kochfeld) renderer.add(new KochfeldRenderer((Kochfeld) k, c));
+            if (k instanceof Ofen) {
+                nr = new OvenRenderer((Ofen)k, c);
+                renderer.add(nr);
+                k.setRenderer(nr);
+            }
+            else if (k instanceof Schrank) {
+                nr = new SchrankRenderer((Schrank) k, c);
+                renderer.add(nr);
+                k.setRenderer(nr);
+            }
+            else if (k instanceof Kuehlschrank) {
+                nr = new KuehlschrankRenderer((Kuehlschrank) k, c);
+                renderer.add(nr);
+                k.setRenderer(nr);
+            }
+            else if (k instanceof Gefrierschrank) {
+                nr = new GefrierschrankRenderer((Gefrierschrank) k, c);
+                renderer.add(nr);
+                k.setRenderer(nr);
+            }
+            else if (k instanceof Schublade) {
+                nr = new SchubladeRenderer((Schublade) k, c);
+                renderer.add(nr);
+                k.setRenderer(nr);
+            }
+            else if (k instanceof Wasserhahn) {
+                nr = new WasserhahnRenderer((Wasserhahn) k, c);
+                renderer.add(nr);
+                k.setRenderer(nr);
+            }
+            else if (k instanceof Dunstabzug) {
+                nr = new DunstabzugRenderer((Dunstabzug) k, c);
+                renderer.add(nr);
+                k.setRenderer(nr);
+            }
+            else if (k instanceof Arbeitsplatte) {
+                nr = new ArbeitsplatteRenderer((Arbeitsplatte) k, c);
+                renderer.add(nr);
+                k.setRenderer(nr);
+            }
+            else if (k instanceof Spuele) {
+                nr = new SpueleRenderer((Spuele) k, c);
+                renderer.add(nr);
+                k.setRenderer(nr);
+            }
+            else if (k instanceof Kochfeld) {
+                nr = new KochfeldRenderer((Kochfeld) k, c);
+                renderer.add(nr);
+                k.setRenderer(nr);
+            }
+            else if (k instanceof Zutat) {}
+//                renderer.add(new SalzRenderer((Salz) k,
+//                             meinPlan.konfigurationVon(((Salz)k).getContainer().id())));
             else System.err.println("ERROR: unknown type: " + k.getClass().getSimpleName());
         }
 
@@ -165,21 +228,71 @@ public class Drop extends Game {
         font.getData().setScale(0.8f);
         backgroundImage = new Texture(Gdx.files.internal("kitchen.jpeg"));
 
-        Pixmap pixmap200 = new Pixmap(Gdx.files.internal("hand.jpeg"));
-        Pixmap pixmap100 = new Pixmap(50, 50, pixmap200.getFormat());
+        Pixmap pixmap200 = new Pixmap(Gdx.files.internal("hand.png"));
+        Pixmap pixmap100 = new Pixmap(16, 32, pixmap200.getFormat());
         pixmap100.drawPixmap(pixmap200,
                 0, 0, pixmap200.getWidth(), pixmap200.getHeight(),
                 0, 0, pixmap100.getWidth(), pixmap100.getHeight()
         );
-        handImage = new Texture(pixmap100);
-        pixmap200.dispose();
+
+        Gdx.graphics.setCursor(Gdx.graphics.newCursor(pixmap100, 0, 0));
+
         pixmap100.dispose();
-        hand = new Sprite(handImage, 50, 50);
+        pixmap200.dispose();
+
         this.setScreen(new GameScreen(this));
+    }
+
+    public Kueche getKueche() {
+        return meineKueche;
     }
 
     public ArrayList<Renderer> getRenderers() {
         return renderer;
+    }
+
+    public void addRenderer(Renderer r) {
+        renderer.add(r);
+    }
+
+    public void removeRenderer(Renderer r) {
+        int i = 0;
+        KochAssistentObject k;
+
+        r.getTexture().dispose();
+
+        while (i < renderer.size()) {
+            k = renderer.get(i).getObject();
+
+            if ((r.getObject() != null) && (k != null)) {
+                if (r.getObject().id().equals(k.id())) break;
+            }
+
+            i++;
+        }
+
+        if (i < renderer.size()) renderer.remove(i);
+    }
+
+    public void addRendererCandidate(Renderer r) {
+        renderers_to_add.add(r);
+    }
+
+    public void removeRendererCandidate(Renderer r) {
+        renderers_to_remove.add(r);
+    }
+
+    public void updateRenderers() {
+        for (Renderer r : renderers_to_remove) {
+            removeRenderer(r);
+        }
+
+        for (Renderer r : renderers_to_add) {
+            addRenderer(r);
+        }
+
+        renderers_to_add.clear();
+        renderers_to_remove.clear();
     }
 
     public void render() {
@@ -190,6 +303,5 @@ public class Drop extends Game {
         batch.dispose();
         font.dispose();
         backgroundImage.dispose();
-        handImage.dispose();
     }
 }

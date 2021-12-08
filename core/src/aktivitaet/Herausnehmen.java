@@ -3,6 +3,8 @@ package aktivitaet;
 import com.badlogic.gdx.ai.btree.LeafTask;
 import com.badlogic.gdx.ai.btree.Task;
 import com.badlogic.gdx.ai.btree.annotation.TaskAttribute;
+import de.ur.ai.Renderer;
+import moebel.Moebel;
 import prolog.ParameterSet;
 import prolog.Substitution;
 import rezept.Rezept;
@@ -10,29 +12,37 @@ import status.StateDescription;
 import zubereitung.Zubereitung;
 import zutat.Zutat;
 
-public class Herausnehmen extends Zubereitung {
-    // Diesen Roesten Task nutzen wir in unserer .tree Datei!
-    @TaskAttribute public String zutat;
-    @TaskAttribute public String name;
-    @TaskAttribute public String geraet;
-    @TaskAttribute public String geraet_name;
+import java.util.List;
 
-    public boolean preconditionsSatisfied(StateDescription current) {
-        if (geraet == null) {
-            // System.out.println("Gerät" + mixer.bezeichner() + " ist nicht verfügbar.");
-            return false;
-        }
-        else if (zutat == null) {
-            return false;
-        }
-        else {
-            Substitution s;
+public class Herausnehmen extends Aktivitaet {
+    public boolean isPossible(List<Renderer> objects, ParameterSet current_sit) {
+        Renderer obj, source;
+        StateDescription s = new StateDescription(current_sit);
 
-            s = current.entails(new ParameterSet("in(" + name + "," + geraet_name + ")"));
-            return (s != null);
+        obj = objects.get(0);
+        source = objects.get(1);
+
+        System.out.println(s.toString());
+        System.out.println("poss(entnehmen(" + obj.getObject().id() + "," + source.getObject().id() + "),s0)");
+        Substitution subs = s.entails(new ParameterSet("poss(entnehmen(" + obj.getObject().id() + "," + source.getObject().id() + "),s0)"));
+
+        return (subs != null);
+    }
+
+    @Override
+    public void perform(List<Renderer> objects) {
+        Renderer obj, source;
+
+        obj = objects.get(0);
+        source = objects.get(1);
+
+        if (source.getObject() instanceof Moebel) {
+            ((Moebel)source.getObject()).removeContainedObject(obj.getObject());
+            ((Zutat)obj.getObject()).setInHand(true);
         }
     }
 
+    /*
     public StateDescription effects(StateDescription current) {
         ParameterSet p = current.getFacts();
 
@@ -44,7 +54,8 @@ public class Herausnehmen extends Zubereitung {
 
         return new StateDescription(p);
     }
-
+*/
+    /*
     public Status execute() {
         Rezept recipe = (Rezept) getObject();
         Zutat z = recipe.getIngredient(zutat);
@@ -57,4 +68,5 @@ public class Herausnehmen extends Zubereitung {
     protected Task copyTo(Task task) {
         return null;
     }
+     */
 }

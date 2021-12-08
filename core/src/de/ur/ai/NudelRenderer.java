@@ -1,20 +1,30 @@
 package de.ur.ai;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import elektrogeraet.Kuehlschrank;
-import moebel.Schrank;
 import prolog.ParameterSet;
 import raum.Konfiguration;
+import zutat.Nudeln;
+import zutat.Salz;
 
-public class KuehlschrankRenderer extends Renderer {
-    public KuehlschrankRenderer(Kuehlschrank s, Konfiguration c) {
-        super(s, c);
+public class NudelRenderer extends Renderer {
+    private final FileHandle my_img = Gdx.files.internal("nudeln.png");
+
+    public NudelRenderer(Nudeln s, Konfiguration c) {
+        super(new Texture(Gdx.files.internal("nudeln.jpeg")), s, c);
     }
 
+    @Override
+    public FileHandle getImg() {
+        return my_img;
+    }
+
+    @Override
     public void perform() {
-        ((Kuehlschrank)my_object).processClick();
     }
 
     public void render(Drop game, BitmapFont font, Camera cam) {
@@ -23,8 +33,6 @@ public class KuehlschrankRenderer extends Renderer {
                 my_config.getW()/this.getScaleX(),
                 my_config.getH()/this.getScaleY());
 
-        font.draw(game.batch,
-                ((Kuehlschrank)my_object).factsToProlog(new ParameterSet()).toString(),
-                this.getX(),
-                cam.viewportHeight - this.getY());
-    }}
+        this.draw(game.batch);
+    }
+}

@@ -13,7 +13,8 @@ public class StateDescription {
 
     public StateDescription(ParameterSet p) {
         parameterSetState = p;
-        parameterSetState.assertRule("hatInhalt(X) :- in(_,X)");
+        parameterSetState.assertFile("/Users/bdludwig/Dropbox/Software_Impl/KochAssistent/core/assets/golog_swi.pl");
+        parameterSetState.assertFile("/Users/bdludwig/Dropbox/Software_Impl/KochAssistent/core/assets/smart_kitchen.pl");
     }
 
     public Substitution entails(ParameterSet p) {

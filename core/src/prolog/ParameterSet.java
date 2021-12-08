@@ -71,7 +71,13 @@ public class ParameterSet {
     }
 
     public void assertRule(String formula) {
-        Query q = new Query(new Compound("assertz", new Term[] {Util.textToTerm(formula)}));
+        Query q = new Query(new Compound("assertz", new Term[] {Term.textToTerm(formula)}));
+        q.hasSolution();
+        q.close();
+    }
+
+    public void assertFile(String file_name) {
+        Query q = new Query(Term.textToTerm("consult(\"" + file_name + "\")"));
         q.hasSolution();
         q.close();
     }
