@@ -1,5 +1,6 @@
 package aktivitaet;
 
+import com.badlogic.gdx.ai.btree.Task;
 import de.ur.ai.Renderer;
 import moebel.Schrank;
 import prolog.ParameterSet;
@@ -26,12 +27,17 @@ public class Schliessen extends Aktivitaet {
     }
 
     @Override
-    public void perform(List<Renderer> objects) {
+    public Task.Status perform(List<Renderer> objects) {
         Renderer my_object = objects.get(0);
 
         if (my_object.getObject() instanceof Schrank) {
             ((Schrank)my_object.getObject()).close();
+
+            return Task.Status.SUCCEEDED;
         }
-        else System.out.println("not a Schrank");
+        else {
+            System.out.println("not a Schrank");
+            return Task.Status.FAILED;
+        }
     }
 }

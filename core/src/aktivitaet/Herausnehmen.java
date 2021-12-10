@@ -23,14 +23,13 @@ public class Herausnehmen extends Aktivitaet {
         source = objects.get(1);
 
         System.out.println(s.toString());
-        System.out.println("poss(entnehmen(" + obj.getObject().id() + "," + source.getObject().id() + "),s0)");
-        Substitution subs = s.entails(new ParameterSet("poss(entnehmen(" + obj.getObject().id() + "," + source.getObject().id() + "),s0)"));
+        Substitution subs = s.entails(new ParameterSet("poss(herausnehmen(" + obj.getObject().id() + "," + source.getObject().id() + "),s0)"));
 
         return (subs != null);
     }
 
     @Override
-    public void perform(List<Renderer> objects) {
+    public Task.Status perform(List<Renderer> objects) {
         Renderer obj, source;
 
         obj = objects.get(0);
@@ -39,7 +38,10 @@ public class Herausnehmen extends Aktivitaet {
         if (source.getObject() instanceof Moebel) {
             ((Moebel)source.getObject()).removeContainedObject(obj.getObject());
             ((Zutat)obj.getObject()).setInHand(true);
+
+            return Task.Status.SUCCEEDED;
         }
+        else return Task.Status.FAILED;
     }
 
     /*

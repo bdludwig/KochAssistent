@@ -13,7 +13,6 @@ public class StateDescription {
 
     public StateDescription(ParameterSet p) {
         parameterSetState = p;
-        System.out.println(System.getProperty("user.dir"));
         parameterSetState.assertFile("./golog_swi.pl");
         parameterSetState.assertFile("./smart_kitchen.pl");
     }

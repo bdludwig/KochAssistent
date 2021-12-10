@@ -225,7 +225,7 @@ public class Drop extends Game {
 
         batch = new SpriteBatch();
         font = new BitmapFont(); // use libGDX's default Arial font
-        font.getData().setScale(0.8f);
+        font.setColor(0, 0, 1, 1);
         backgroundImage = new Texture(Gdx.files.internal("kitchen.jpeg"));
 
         Pixmap pixmap200 = new Pixmap(Gdx.files.internal("hand.png"));

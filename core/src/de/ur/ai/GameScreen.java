@@ -1,19 +1,19 @@
 package de.ur.ai;
 
 import aktivitaet.*;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.ai.btree.Task;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
-import main.KochAssistentObject;
-import moebel.Arbeitsplatte;
+import plan.BTAssistent;
 import zutat.Zutat;
 
 import java.util.ArrayList;
@@ -22,13 +22,17 @@ import java.util.ListIterator;
 public class GameScreen implements Screen, InputProcessor {
     final Drop game;
 
-    Music rainMusic;
-    OrthographicCamera camera;
+    private OrthographicCamera camera;
+
+    private Texture sos_image;
+    private Sprite emergency;
 
     private double last_screen_X, last_screen_Y;
     private float width, height;
 
     private Renderer obj_in_hand, selected_object, over;
+
+    private BTAssistent assi;
 
     public GameScreen(final Drop gam) {
         this.game = gam;
@@ -36,10 +40,20 @@ public class GameScreen implements Screen, InputProcessor {
         width = 640;
         height = 480;
 
-        // load the drop sound effect and the rain background "music"
+        assi = null;
 
-        rainMusic = Gdx.audio.newMusic(Gdx.files.internal("rain.mp3"));
-        // rainMusic.setLooping(true);
+        Pixmap pixmap200 = new Pixmap(Gdx.files.internal("sos.png"));
+        Pixmap pixmap100 = new Pixmap(40, 40, pixmap200.getFormat());
+        pixmap100.drawPixmap(pixmap200,
+                0, 0, pixmap200.getWidth(), pixmap200.getHeight(),
+                0, 0, pixmap100.getWidth(), pixmap100.getHeight()
+        );
+        sos_image = new Texture(pixmap100);
+        emergency = new Sprite(sos_image);
+        emergency.setOrigin(10, 10);
+
+        pixmap100.dispose();
+        pixmap200.dispose();
 
         // create the camera and the SpriteBatch
         camera = new OrthographicCamera();
@@ -74,35 +88,36 @@ public class GameScreen implements Screen, InputProcessor {
         game.batch.begin();
         game.batch.draw(game.backgroundImage, 0, 0, camera.viewportWidth, camera.viewportHeight);
 
+        emergency.draw(game.batch);
+
         ArrayList<Renderer> renderers = game.getRenderers();
         ListIterator<Renderer> li = renderers.listIterator();
 
         if (selected_object != null) {
-            while (li.hasNext()) {
-                Renderer r = li.next();
-
-                if (r.label().equals(selected_object.label())) {
-                    r.render(game, game.font, camera);
-                    Pixmap p = new Pixmap((int)r.getWidth(),
-                            (int)r.getHeight(),
-                            Pixmap.Format.RGBA8888);
-                    p.setColor(0, 1, 0, 1);
-                    p.drawRectangle(0, 0, (int)r.getWidth(), (int)r.getHeight());
-                    game.batch.draw(new Texture(p), r.getX(), r.getY());
-                }
-
-            }
+            selected_object.render(game, game.font, camera);
+            Texture t;
+            Pixmap p = new Pixmap((int) selected_object.getWidth(),
+                    (int) selected_object.getHeight(),
+                    Pixmap.Format.RGBA8888);
+            p.setColor(0, 1, 0, 1);
+            p.drawRectangle(0, 0, (int) selected_object.getWidth(), (int) selected_object.getHeight());
+            game.batch.draw(t = new Texture(p), selected_object.getX(), selected_object.getY());
 
             game.updateRenderers();
         }
 
-        if (over != null) {
+        if ((over != null) && (over != selected_object)) {
+            Texture t;
             Pixmap p = new Pixmap((int)over.getWidth(),
                     (int)over.getHeight(),
                     Pixmap.Format.RGBA8888);
             p.setColor(1, 1, 0, 1);
             p.drawRectangle(0, 0, (int)over.getWidth(), (int)over.getHeight());
-            game.batch.draw(new Texture(p), over.getX(), over.getY());
+            game.batch.draw(t = new Texture(p), over.getX(), over.getY());
+        }
+
+        if (assi != null) {
+            game.font.draw(game.batch, assi.getCurrentMessage(), 50, 25);
         }
 
         game.batch.end();
@@ -156,7 +171,7 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public void dispose() {
-        rainMusic.dispose();
+        sos_image.dispose();
     }
 
     @Override
@@ -181,8 +196,20 @@ public class GameScreen implements Screen, InputProcessor {
                     a = new Oeffnen();
                     args.add(selected_object);
 
-                    if (a.isPossible(args, game.getKueche().factsToProlog())) a.perform(args);
-                    else System.out.println("cannot open");
+                    if (a.isPossible(args, game.getKueche().factsToProlog())) {
+                        Task.Status result_state = a.perform(args);
+
+                        if (assi != null) {
+                            a.setStatus(result_state);
+                            assi.setLastAction(a);
+                        }
+                    }
+                    else {
+                        a.setStatus(Task.Status.FAILED);
+                        System.out.println("cannot open");
+                    }
+
+                    if (assi != null) assi.step();
 
                     break;
 
@@ -190,25 +217,42 @@ public class GameScreen implements Screen, InputProcessor {
                     a = new Schliessen();
                     args.add(selected_object);
 
-                    if (a.isPossible(args, game.getKueche().factsToProlog())) a.perform(args);
-                    else System.out.println("cannot close");
+                    if (a.isPossible(args, game.getKueche().factsToProlog())) {
+                        Task.Status result_state = a.perform(args);
+
+                        if (assi != null) {
+                            a.setStatus(result_state);
+                            assi.setLastAction(a);
+                        }
+                    }
+                    else {
+                        a.setStatus(Task.Status.FAILED);
+                        System.out.println("cannot close");
+                    }
+
+                    if (assi != null) assi.step();
 
                     break;
 
                 case 'n':
                     System.out.println(selected_object.getObject().id() + " nehmen");
-/*
-                    if (selected_object.getObject() instanceof Zutat) {
 
- */
-                        a = new Herausnehmen();
+                    a = new Herausnehmen();
 
-                        args.add(selected_object);
-                        args.add(((Zutat)selected_object.getObject()).getContainer().getRenderer());
+                    args.add(selected_object);
+                    args.add(((Zutat)selected_object.getObject()).getContainer().getRenderer());
 
-                        if (a.isPossible(args, game.getKueche().factsToProlog())) {
-                            a.perform(args);
+                    if (a.isPossible(args, game.getKueche().factsToProlog())) {
+                        Task.Status result_state = a.perform(args);
 
+                        if (assi != null) {
+                            a.setStatus(result_state);
+                            assi.setLastAction(a);
+                        }
+
+                        // UI Rendering für offene Schranktüren
+
+                        if (result_state == Task.Status.SUCCEEDED) {
                             game.removeRendererCandidate(selected_object);
                             game.updateRenderers();
                             obj_in_hand = selected_object;
@@ -227,11 +271,17 @@ public class GameScreen implements Screen, InputProcessor {
                             pixmap100.dispose();
                             pixmap200.dispose();
                         }
-                        else System.out.println("cannot Herausnehmen");
-                        /*
                     }
-                    else System.out.println("Herausnehmen geht nur mit Zutaten, aber nicht mit " + selected_object.getObject().bezeichner());
-*/
+                    else {
+                        a.setStatus(Task.Status.FAILED);
+                        System.out.println("cannot Herausnehen");
+                    }
+
+                    if (assi != null) {
+                        System.out.println("BTASSI - please next step!");
+                        assi.step();
+                    }
+
                     break;
 
                 case 'a':
@@ -247,28 +297,45 @@ public class GameScreen implements Screen, InputProcessor {
                         args.add(selected_object);
 
                         if (a.isPossible(args, game.getKueche().factsToProlog())) {
-                            a.perform(args);
+                            Task.Status result_state = a.perform(args);
 
-                            game.removeRendererCandidate(obj_in_hand);
-                            game.updateRenderers();
+                            if (assi != null) {
+                                a.setStatus(result_state);
+                                assi.setLastAction(a);
+                            }
 
-                            obj_in_hand = null;
+                            // UI Rendering
 
-                            Pixmap pixmap200 = new Pixmap(Gdx.files.internal("hand.png"));
-                            Pixmap pixmap100 = new Pixmap(16, 32, pixmap200.getFormat());
-                            pixmap100.drawPixmap(pixmap200,
-                                    0, 0, pixmap200.getWidth(), pixmap200.getHeight(),
-                                    0, 0, pixmap100.getWidth(), pixmap100.getHeight()
-                            );
+                            if (result_state == Task.Status.SUCCEEDED) {
+                                game.removeRendererCandidate(obj_in_hand);
+                                game.updateRenderers();
 
-                            Gdx.graphics.setCursor(Gdx.graphics.newCursor(pixmap100, 0, 0));
+                                obj_in_hand = null;
 
-                            pixmap100.dispose();
-                            pixmap200.dispose();
+                                Pixmap pixmap200 = new Pixmap(Gdx.files.internal("hand.png"));
+                                Pixmap pixmap100 = new Pixmap(16, 32, pixmap200.getFormat());
+                                pixmap100.drawPixmap(pixmap200,
+                                        0, 0, pixmap200.getWidth(), pixmap200.getHeight(),
+                                        0, 0, pixmap100.getWidth(), pixmap100.getHeight()
+                                );
+
+                                Gdx.graphics.setCursor(Gdx.graphics.newCursor(pixmap100, 0, 0));
+
+                                pixmap100.dispose();
+                                pixmap200.dispose();
+                            }
                         }
-                        else System.out.println("cannot Abstellen");
+                        else {
+                            a.setStatus(Task.Status.FAILED);
+                            System.out.println("cannot Abstellen");
+                        }
                     }
                     //else System.out.println("Abstellen geht nur mit Arbeitsplatte, aber nicht mit " + selected_object.getObject().bezeichner());
+
+                    if (assi != null) {
+                        System.out.println("BTASSI - please next step!");
+                        assi.step();
+                    }
 
                     break;
             }
@@ -298,6 +365,13 @@ public class GameScreen implements Screen, InputProcessor {
 
         touchPos.set(screenX, screenY, 0);
         camera.unproject(touchPos);
+
+        if (emergency.getBoundingRectangle().contains(touchPos.x, touchPos.y)) {
+            System.out.println("SOS");
+            assi = new BTAssistent(game.getKueche());
+            assi.init();
+            return true;
+        }
 
         while (li.hasNext()) {
             Renderer r = li.next();
@@ -338,7 +412,6 @@ public class GameScreen implements Screen, InputProcessor {
         while (li.hasNext()) {
             Renderer r = li.next();
             if (r.contains(touchPos.x, touchPos.y)) {
-                System.out.println("over");
                 over = r;
 
                 Pixmap p = new Pixmap((int)r.getWidth(),

@@ -63,7 +63,7 @@ die () {
 # OS specific support (must be 'true' or 'false').
 cygwin=false
 msys=false
-darwin=false
+darwin=rtue
 nonstop=false
 case "`uname`" in
   CYGWIN* )

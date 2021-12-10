@@ -1,5 +1,6 @@
 package aktivitaet;
 
+import com.badlogic.gdx.ai.btree.Task;
 import de.ur.ai.Renderer;
 import moebel.Arbeitsplatte;
 import moebel.Moebel;
@@ -26,7 +27,7 @@ public class Abstellen extends Aktivitaet{
     }
 
     @Override
-    public void perform(List<Renderer> objects) {
+    public Task.Status perform(List<Renderer> objects) {
         Renderer obj, source;
 
         obj = objects.get(0);
@@ -35,6 +36,9 @@ public class Abstellen extends Aktivitaet{
         if (source.getObject() instanceof Arbeitsplatte) {
             ((Arbeitsplatte) source.getObject()).addContainedObject(obj.getObject());
             ((Zutat)obj.getObject()).setInHand(false);
+
+            return Task.Status.SUCCEEDED;
         }
+        else return Task.Status.FAILED;
     }
 }

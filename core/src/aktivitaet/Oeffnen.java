@@ -1,5 +1,6 @@
 package aktivitaet;
 
+import com.badlogic.gdx.ai.btree.Task;
 import de.ur.ai.Renderer;
 import main.KochAssistentObject;
 import moebel.Schrank;
@@ -19,10 +20,6 @@ public class Oeffnen extends Aktivitaet {
         StateDescription s = new StateDescription(current_sit);
 
         if (my_object.getObject() instanceof Schrank) {
-            //System.out.println(s.entails(new ParameterSet("poss(oeffnen(" + my_object.getObject().id() + "),s0)")));
-
-            System.out.println(s.entails(new ParameterSet("do(oeffnen(o_9):entnehmen(O,o_9),s0,S)")));
-
             return s.entails(new ParameterSet("poss(oeffnen(" + my_object.getObject().id() + "),s0)")) != null;
         }
         else {
@@ -32,12 +29,16 @@ public class Oeffnen extends Aktivitaet {
     }
 
     @Override
-    public void perform(List<Renderer> objects) {
+    public Task.Status perform(List<Renderer> objects) {
         Renderer my_object = objects.get(0);
 
         if (my_object.getObject() instanceof Schrank) {
             ((Schrank)my_object.getObject()).open();
+            return Task.Status.SUCCEEDED;
         }
-        else System.out.println("not a Schrank");
+        else {
+            System.out.println("not a Schrank");
+            return Task.Status.FAILED;
+        }
     }
 }
