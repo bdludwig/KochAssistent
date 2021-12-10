@@ -1,0 +1,15 @@
+import oeffnen:"aktivitaet.LTOeffnen"
+import herausnehmen:"aktivitaet.LTHerausnehmen"
+import abstellen:"aktivitaet.LTAbstellen"
+import schliessen:"aktivitaet.LTSchliessen"
+
+sequence
+    oeffnen moebel:"o_9"
+    herausnehmen moebel:"o_9" objekt:"o_10"
+    selector
+        sequence
+            abstellen moebel:"o_24" objekt:"o_10"
+            schliessen moebel:"o_9"
+        sequence
+            schliessen moebel:"o_9"
+            abstellen moebel:"o_24" objekt:"o_10"
