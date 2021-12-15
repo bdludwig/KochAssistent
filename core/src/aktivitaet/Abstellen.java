@@ -13,6 +13,10 @@ import zutat.Zutat;
 import java.util.List;
 
 public class Abstellen extends Aktivitaet {
+    public Abstellen() {
+        super();
+    }
+
     public boolean isPossible(ParameterSet current_sit) {
         KochAssistentObject obj, source;
         StateDescription s = new StateDescription(current_sit);
@@ -26,15 +30,6 @@ public class Abstellen extends Aktivitaet {
     }
 
     @Override
-    public Substitution effects_satisfied(ParameterSet current_sit) {
-        ParameterSet p = new ParameterSet();
-
-        p.add("contains(" + args.get(1).id() + "," + args.get(0).id() + ",s0)");
-
-        return new StateDescription(current_sit).entails(p);
-    }
-
-    @Override
     public Task.Status perform() {
         KochAssistentObject obj, source;
 
@@ -44,9 +39,30 @@ public class Abstellen extends Aktivitaet {
         if (source instanceof Arbeitsplatte) {
             ((Arbeitsplatte) source).addContainedObject(obj);
             ((Zutat)obj).setInHand(false);
+            ((Zutat) obj).setContainer(source);
 
             return Task.Status.SUCCEEDED;
         }
         else return Task.Status.FAILED;
+    }
+
+    @Override
+    public StateDescription effects(StateDescription current) {
+        ParameterSet p = current.getFacts();
+        KochAssistentObject obj = args.get(0);
+        KochAssistentObject source = args.get(1);
+
+        System.out.println("EFFECT now true: " + "contains(" + source.id() + "," + obj.id() + ",s0)");
+        System.out.println("EFFECT now false: " + "in_hand(" + obj.id() + ",s0)");
+
+        p.add("contains(" + source.id() + "," + obj.id() + ",s0)");
+        p.remove("in_hand(" + obj.id() + ",s0)");
+
+        return new StateDescription(p);
+    }
+
+    @Override
+    public String toString() {
+        return "abstellen(" + args.get(0).id() + "," + args.get(1).id() + ")";
     }
 }

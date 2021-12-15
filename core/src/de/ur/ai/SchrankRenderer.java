@@ -11,8 +11,6 @@ import zutat.Salz;
 import java.util.ArrayList;
 
 public class SchrankRenderer extends Renderer {
-    private boolean contained_elements_visible;
-
     public SchrankRenderer(Schrank s, Konfiguration c) {
         super(s, c);
         contained_elements_visible = false;
@@ -43,8 +41,6 @@ public class SchrankRenderer extends Renderer {
                             (int)(my_config.getY() + (h+1)*(i /4)),
                             (int)w,
                             (int)h);
-
-                    game.getKueche().addItem(o);
 
                     if (o instanceof Salz) r = new SalzRenderer((Salz) o, conf);
                     else if (o instanceof Nudeln) r = new NudelRenderer((Nudeln) o, conf);
@@ -91,14 +87,10 @@ public class SchrankRenderer extends Renderer {
         ArrayList<KochAssistentObject> items = s.getContainedObjects();
 
         for (KochAssistentObject o : items) {
-            if (game.getKueche().removeItem(o)) {
-                System.out.println("remove renderer");
-                if (o.getRenderer() != null) {
-                    o.getRenderer().setPosition(0, 0);
-                    game.removeRendererCandidate(o.getRenderer());
-                }
+            if (o.getRenderer() != null) {
+                o.getRenderer().setPosition(0, 0);
+                game.removeRendererCandidate(o.getRenderer());
             }
-            else System.out.println("no item: " + o.id());
         }
     }
 }

@@ -14,6 +14,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import plan.BTAssistent;
+import status.StateDescription;
 import zutat.Zutat;
 
 import java.util.ArrayList;
@@ -65,6 +66,8 @@ public class GameScreen implements Screen, InputProcessor {
         ArrayList<Renderer> renderers = game.getRenderers();
         for (int i = 0; i < renderers.size(); i++)
             renderers.get(i).setLocation(camera);
+
+        System.out.println("INIITIAL SITUATION: " + game.getKueche().factsToProlog());
     }
 
     @Override
@@ -186,9 +189,9 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public boolean keyTyped(char character) {
-        System.out.println("key: "  + character);
         if (selected_object != null) {
-            Aktivitaet a;
+            Aktivitaet a = null;
+            StateDescription current = new StateDescription(game.getKueche().factsToProlog());
 
             switch (character) {
                 case 'ö':
@@ -255,9 +258,11 @@ public class GameScreen implements Screen, InputProcessor {
                         if (result_state == Task.Status.SUCCEEDED) {
                             game.removeRendererCandidate(selected_object);
                             game.updateRenderers();
+
                             obj_in_hand = selected_object;
 
                             selected_object = a.getArg(1).getRenderer();
+                            selected_object.setVisibility(false);
 
                             Pixmap pixmap200 = new Pixmap(a.getArg(0).getRenderer().getImg());
                             Pixmap pixmap100 = new Pixmap(16, 32, pixmap200.getFormat());
@@ -274,7 +279,7 @@ public class GameScreen implements Screen, InputProcessor {
                     }
                     else {
                         a.setStatus(Task.Status.FAILED);
-                        System.out.println("cannot Herausnehen");
+                        System.out.println("cannot Herausnehmen");
                     }
 
                     if (assi != null) {
@@ -336,10 +341,68 @@ public class GameScreen implements Screen, InputProcessor {
                     }
 
                     break;
+
+                case 'e':
+                    if (obj_in_hand == null) {
+                        System.out.println("Nutzer hat nichts in der Hand.");
+                    }
+                    else {
+                        a = new Einstellen();
+                        a.addArg(obj_in_hand.getObject());
+                        a.addArg(selected_object.getObject());
+
+                        if (assi != null) assi.setLastAction(a);
+
+                        if (a.isPossible(game.getKueche().factsToProlog())) {
+                            Task.Status result_state = a.perform();
+
+                            if (assi != null) {
+                                a.setStatus(result_state);
+                            }
+
+                            // UI Rendering
+
+                            if (result_state == Task.Status.SUCCEEDED) {
+                                obj_in_hand = null;
+                                selected_object.setVisibility(false);
+
+                                Pixmap pixmap200 = new Pixmap(Gdx.files.internal("hand.png"));
+                                Pixmap pixmap100 = new Pixmap(16, 32, pixmap200.getFormat());
+                                pixmap100.drawPixmap(pixmap200,
+                                        0, 0, pixmap200.getWidth(), pixmap200.getHeight(),
+                                        0, 0, pixmap100.getWidth(), pixmap100.getHeight()
+                                );
+
+                                Gdx.graphics.setCursor(Gdx.graphics.newCursor(pixmap100, 0, 0));
+
+                                pixmap100.dispose();
+                                pixmap200.dispose();
+                            }
+                        }
+                        else {
+                            a.setStatus(Task.Status.FAILED);
+                            System.out.println("cannot Einstellen");
+                        }
+                    }
+
+                    if (assi != null) {
+                        System.out.println("BTASSI - please next step!");
+                        assi.step();
+                    }
+
+                    break;
+
+            }
+
+            if (a != null) {
+                System.out.println("LAST ACTION: " + a);
+                a.effects(current);
+                System.out.println("CURRENT SITUATIION: " + game.getKueche().factsToProlog());
             }
         }
         else System.out.println("no object selected");
-        return false;
+
+        return true;
     }
 
     @Override

@@ -1,14 +1,10 @@
 package aktivitaet;
 
 import com.badlogic.gdx.ai.btree.Task;
-import de.ur.ai.Renderer;
 import main.KochAssistentObject;
 import moebel.Schrank;
 import prolog.ParameterSet;
-import prolog.Substitution;
 import status.StateDescription;
-
-import java.util.List;
 
 public class Schliessen extends Aktivitaet {
     public Schliessen() {
@@ -18,25 +14,15 @@ public class Schliessen extends Aktivitaet {
     @Override
     public boolean isPossible(ParameterSet current_sit) {
         KochAssistentObject my_object = args.get(0);
+        StateDescription s = new StateDescription(current_sit);
 
         if (my_object instanceof Schrank) {
-            if (((Schrank)my_object).isOpen()) return true;
-            else return false;
+            return s.entails(new ParameterSet("poss(schliessen(" + my_object.id() + "),s0)")) != null;
         }
         else {
             System.out.println("not a Schrank");
             return false;
         }
-    }
-
-    @Override
-    public Substitution effects_satisfied(ParameterSet current_sit) {
-        ParameterSet effects = new ParameterSet();
-        Schrank obj = (Schrank)args.get(0);
-
-        effects.add("door_closed(" + obj.id() + ",s0)");
-
-        return new StateDescription(current_sit).entails(effects);
     }
 
     @Override
@@ -52,5 +38,24 @@ public class Schliessen extends Aktivitaet {
             System.out.println("not a Schrank");
             return Task.Status.FAILED;
         }
+    }
+
+    @Override
+    public StateDescription effects(StateDescription current) {
+        ParameterSet p = current.getFacts();
+        KochAssistentObject my_object = args.get(0);
+
+        System.out.println("EFFECT now false: door_open(" + my_object.id() + ",s0)");
+        System.out.println("EFFECT now true: door_closed(" + my_object.id() + ",s0)");
+
+        p.add("door_closed(" + my_object.id() + ",s0)");
+        p.remove("door_open(" + my_object.id() + ",s0)");
+
+        return new StateDescription(p);
+    }
+
+    @Override
+    public String toString() {
+        return "schliessen(" + args.get(0).id() + ")";
     }
 }

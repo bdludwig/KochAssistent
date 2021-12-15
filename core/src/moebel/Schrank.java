@@ -48,7 +48,9 @@ public class Schrank extends Moebel {
 
     @Override
     public void removeContainedObject(KochAssistentObject o) {
+        System.out.println(this.getClass().getSimpleName() + ": " + storedObjects.size());
         storedObjects.remove(o);
+        System.out.println(this.getClass().getSimpleName() + ": " + storedObjects.size());
     }
 
     public boolean isOpen() {

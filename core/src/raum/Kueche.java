@@ -14,22 +14,11 @@ public class Kueche {
     }
 
     public void addItem(KochAssistentObject o) {
-        items.add(o);
+        if (!items.contains(o)) items.add(o);
     }
 
-    public boolean removeItem(KochAssistentObject o) {
-        int i = 0;
-
-        while ((i < items.size()) && (items.get(i).id().equals(o.id()))) {
-            System.out.println(items.get(i).id() + " is not " + o.id());
-            i++;
-        }
-
-        if (i == items.size()) return false;
-        else {
-            items.remove(i);
-            return true;
-        }
+    public void removeItem(KochAssistentObject o) {
+        items.remove(o);
     }
 
     public ArrayList<KochAssistentObject> getItems() {
@@ -39,6 +28,7 @@ public class Kueche {
     public ParameterSet factsToProlog() {
         ParameterSet p = new ParameterSet();
 
+        System.out.println(this.getClass().getSimpleName() + " factsToProlog: " + items.size());
         for (KochAssistentObject o : items) {
             p = o.factsToProlog(p);
         }

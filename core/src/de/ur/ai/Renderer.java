@@ -17,6 +17,7 @@ import raum.Konfiguration;
 abstract public class Renderer extends Sprite {
     protected KochAssistentObject my_object;
     protected Konfiguration my_config;
+    protected boolean contained_elements_visible;
 
     public Renderer() {
         my_config = null;
@@ -58,6 +59,10 @@ abstract public class Renderer extends Sprite {
     public abstract void perform();
 
     public abstract void render(Drop game, BitmapFont font, Camera cam);
+
+    public void setVisibility(boolean v) {
+        contained_elements_visible = v;
+    }
 
     public void scaleBounds(float scale_x, float scale_y) {
         this.setScale(this.getScaleX() * scale_x, this.getScaleY() * scale_y);

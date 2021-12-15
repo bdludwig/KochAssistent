@@ -1,11 +1,9 @@
 package aktivitaet;
 
 import com.badlogic.gdx.ai.btree.Task;
-import de.ur.ai.Renderer;
 import main.KochAssistentObject;
 import moebel.Schrank;
 import prolog.ParameterSet;
-import prolog.Substitution;
 import status.StateDescription;
 
 import java.util.List;
@@ -13,14 +11,6 @@ import java.util.List;
 public class Oeffnen extends Aktivitaet {
     public Oeffnen() {
         super();
-    }
-
-    @Override
-    public Substitution effects_satisfied(ParameterSet current_sit) {
-        ParameterSet p = new ParameterSet();
-
-        p.add("door_open(" + args.get(0).id() + ",s0)");
-        return new StateDescription(current_sit).entails(p);
     }
 
     @Override
@@ -49,5 +39,24 @@ public class Oeffnen extends Aktivitaet {
             System.out.println("not a Schrank");
             return Task.Status.FAILED;
         }
+    }
+
+    @Override
+    public StateDescription effects(StateDescription current) {
+        ParameterSet p = current.getFacts();
+        KochAssistentObject my_object = args.get(0);
+
+        System.out.println("EFFECT now true: door_open(" + my_object.id() + ",s0)");
+        System.out.println("EFFECT now false: door_closed(" + my_object.id() + ",s0)");
+
+        p.add("door_open(" + my_object.id() + ",s0)");
+        p.remove("door_closed(" + my_object.id() + ",s0)");
+
+        return new StateDescription(p);
+    }
+
+    @Override
+    public String toString() {
+        return "oeffnen(" + args.get(0).id() + ")";
     }
 }

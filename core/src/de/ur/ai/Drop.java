@@ -150,8 +150,6 @@ public class Drop extends Game {
         meineKueche.addItem(k);
         meinPlan.neuerGegenstand(k, 295, 291, 381-295, 10);
 
-        System.out.println(meineKueche.factsToProlog());
-
         // visualization for environment
 
         renderer = new ArrayList<Renderer>();

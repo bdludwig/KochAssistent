@@ -33,11 +33,11 @@ abstract public class Aktivitaet {
 
     abstract public boolean isPossible(ParameterSet current_sit);
 
-    abstract public Substitution effects_satisfied(ParameterSet current_sit);
-
     abstract public Task.Status perform();
 
     public KochAssistentObject getArg(int pos) {
         return args.get(pos);
     }
+
+    abstract public StateDescription effects(StateDescription current);
 }
