@@ -33,7 +33,10 @@ public class LTEinstellen extends LeafTask<BTAssistent> {
 
             return Status.SUCCEEDED;
         }
-        else return getStatus();
+        else {
+            System.out.println("no operation. Current state: " + getStatus());
+            return getStatus();
+        }
     }
 
     @Override

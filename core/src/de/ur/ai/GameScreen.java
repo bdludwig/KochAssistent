@@ -188,20 +188,20 @@ public class GameScreen implements Screen, InputProcessor {
     public boolean keyTyped(char character) {
         System.out.println("key: "  + character);
         if (selected_object != null) {
-            ArrayList<Renderer> args = new ArrayList<Renderer>();
             Aktivitaet a;
 
             switch (character) {
                 case 'ö':
                     a = new Oeffnen();
-                    args.add(selected_object);
+                    a.addArg(selected_object.getObject());
 
-                    if (a.isPossible(args, game.getKueche().factsToProlog())) {
-                        Task.Status result_state = a.perform(args);
+                    if (assi != null) assi.setLastAction(a);
+
+                    if (a.isPossible(game.getKueche().factsToProlog())) {
+                        Task.Status result_state = a.perform();
 
                         if (assi != null) {
                             a.setStatus(result_state);
-                            assi.setLastAction(a);
                         }
                     }
                     else {
@@ -215,14 +215,15 @@ public class GameScreen implements Screen, InputProcessor {
 
                 case 's':
                     a = new Schliessen();
-                    args.add(selected_object);
+                    a.addArg(selected_object.getObject());
 
-                    if (a.isPossible(args, game.getKueche().factsToProlog())) {
-                        Task.Status result_state = a.perform(args);
+                    if (assi != null) assi.setLastAction(a);
+
+                    if (a.isPossible(game.getKueche().factsToProlog())) {
+                        Task.Status result_state = a.perform();
 
                         if (assi != null) {
                             a.setStatus(result_state);
-                            assi.setLastAction(a);
                         }
                     }
                     else {
@@ -235,15 +236,14 @@ public class GameScreen implements Screen, InputProcessor {
                     break;
 
                 case 'n':
-                    System.out.println(selected_object.getObject().id() + " nehmen");
-
                     a = new Herausnehmen();
+                    a.addArg(selected_object.getObject());
+                    a.addArg(((Zutat)selected_object.getObject()).getContainer());
 
-                    args.add(selected_object);
-                    args.add(((Zutat)selected_object.getObject()).getContainer().getRenderer());
+                    if (assi != null) assi.setLastAction(a);
 
-                    if (a.isPossible(args, game.getKueche().factsToProlog())) {
-                        Task.Status result_state = a.perform(args);
+                    if (a.isPossible(game.getKueche().factsToProlog())) {
+                        Task.Status result_state = a.perform();
 
                         if (assi != null) {
                             a.setStatus(result_state);
@@ -257,9 +257,9 @@ public class GameScreen implements Screen, InputProcessor {
                             game.updateRenderers();
                             obj_in_hand = selected_object;
 
-                            selected_object = args.get(1);
+                            selected_object = a.getArg(1).getRenderer();
 
-                            Pixmap pixmap200 = new Pixmap(args.get(0).getImg());
+                            Pixmap pixmap200 = new Pixmap(a.getArg(0).getRenderer().getImg());
                             Pixmap pixmap100 = new Pixmap(16, 32, pixmap200.getFormat());
                             pixmap100.drawPixmap(pixmap200,
                                     0, 0, pixmap200.getWidth(), pixmap200.getHeight(),
@@ -285,23 +285,21 @@ public class GameScreen implements Screen, InputProcessor {
                     break;
 
                 case 'a':
-                    System.out.println(selected_object.getObject().id() + " abstellen");
-
                     if (obj_in_hand == null) {
                         System.out.println("Nutzer hat nichts in der Hand.");
                     }
                     else {
                         a = new Abstellen();
+                        a.addArg(obj_in_hand.getObject());
+                        a.addArg(selected_object.getObject());
 
-                        args.add(obj_in_hand);
-                        args.add(selected_object);
+                        if (assi != null) assi.setLastAction(a);
 
-                        if (a.isPossible(args, game.getKueche().factsToProlog())) {
-                            Task.Status result_state = a.perform(args);
+                        if (a.isPossible(game.getKueche().factsToProlog())) {
+                            Task.Status result_state = a.perform();
 
                             if (assi != null) {
                                 a.setStatus(result_state);
-                                assi.setLastAction(a);
                             }
 
                             // UI Rendering

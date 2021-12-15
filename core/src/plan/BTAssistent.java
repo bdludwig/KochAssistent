@@ -49,7 +49,8 @@ public class BTAssistent {
         System.out.println("next step in BT with state: " + myBT.getStatus());
         myBT.step();
         if (myBT.getStatus() == Task.Status.SUCCEEDED) this.setCurrentMessage("Ok - fertig!");
-        this.setLastAction(null);
+        else if (myBT.getStatus() == Task.Status.FAILED) System.out.println("FAILED!");
+        else if (myBT.getStatus() == Task.Status.RUNNING) System.out.println("RUNNING!");
     }
 
 
@@ -62,10 +63,15 @@ public class BTAssistent {
     }
 
     public void setLastAction(Aktivitaet a) {
+        System.out.println("set last action: " + a);
         last_action = a;
     }
 
     public Aktivitaet getLastAction() {
         return last_action;
+    }
+
+    public StateDescription currentSituation() {
+        return new StateDescription(myK.factsToProlog());
     }
 }
